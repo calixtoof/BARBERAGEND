@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARBERAGEND PRECIOS FLEXIBLES</title>
+    <!-- Librería para generar QR (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --bg-input: #2c2c2c;
+            --primary: #d4af37;
+            --primary-gradient: linear-gradient(135deg, #d4af37, #f9d423);
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --success: #00e676;
+            --shadow: 0 4px 15px rgba(0,0,0,0.5);
+            --radius: 8px;
+            --font-main: 'Segoe UI', Roboto, sans-serif;
+            --neon-green: #39ff14;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            /* Fondo oscuro forzado */
+            background-color: #121212;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- PANTALLA DE LOGIN --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://images.unsplash.com/photo-1503951914875-452162b70987?w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--neon-green);
+            padding: 3rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px var(--neon-green);
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(5px);
+        }
+
+        .login-logo { width: 80px; height: 80px; stroke: var(--neon-green); margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px var(--neon-green)); }
+        .login-title { color: var(--neon-green); font-size: 2rem; margin-bottom: 2rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-green); }
+        .login-input { width: 100%; padding: 1rem; margin-bottom: 1.5rem; background: #0a0a0a; border: 1px solid var(--neon-green); color: var(--neon-green); font-size: 1.2rem; text-align: center; border-radius: 5px; outline: none; }
+        .login-btn { background: var(--neon-green); color: #000; border: none; padding: 1rem 2rem; font-size: 1.2rem; font-weight: bold; cursor: pointer; width: 100%; border-radius: 5px; text-transform: uppercase; transition: 0.3s; }
+        .login-btn:hover { background: #fff; box-shadow: 0 0 20px var(--neon-green); }
+        #loginError { color: #ff0000; margin-top: 1.5rem; font-weight: bold; font-size: 0.9rem; display: none; text-shadow: 1px 1px 0 #fff; animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+
+        /* --- APP PRINCIPAL --- */
+        #main-app { display: none; opacity: 0; transition: opacity 1s; }
+        #main-app.visible { display: flex; opacity: 1; }
+
+        .app-container { display: flex; width: 100%; max-width: 1600px; margin: 0 auto; }
+        
+        aside {
+            width: 280px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid #333;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 10;
+        }
+        .brand-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 2.5rem; cursor: pointer; padding: 10px; border-radius: var(--radius); transition: background 0.3s; }
+        .brand-container:hover { background: rgba(255,255,255,0.05); }
+        .logo-svg { width: 40px; height: 40px; stroke: var(--primary); fill: none; filter: drop-shadow(0 0 5px var(--primary)); }
+        .brand-text { font-size: 1.4rem; font-weight: 900; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 1px; }
+
+        nav button {
+            background: rgba(255,255,255,0.03); border: 1px solid transparent; color: var(--text-muted); width: 100%; padding: 1rem;
+            text-align: left; cursor: pointer; font-size: 1rem; border-radius: var(--radius); transition: all 0.3s; margin-bottom: 0.8rem;
+            display: flex; align-items: center; gap: 12px; font-weight: 600;
+        }
+        nav button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        nav button.active { background: var(--primary-gradient); color: #000; border-color: rgba(255,255,255,0.2); box-shadow: 0 0 15px var(--primary); }
+
+        main { flex: 1; margin-left: 280px; padding: 2rem; overflow-y: auto; }
+        section { display: none; animation: fadeIn 0.4s; }
+        section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background-color: var(--bg-panel); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.05); }
+
+        .btn {
+            background: var(--primary-gradient); color: #000; border: none; padding: 0.8rem 1.5rem; border-radius: var(--radius); cursor: pointer;
+            font-weight: 800; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--primary); }
+        .btn-danger { background: #ff5252; color: white; font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+        .btn-success { background: #00e676; color: #000; padding: 0.4rem 0.8rem; font-weight: bold; }
+        .btn-whatsapp { background: #25D366; color: #fff; padding: 0.4rem 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem;}
+        
+        input, select, textarea {
+            background-color: var(--bg-input); border: 1px solid #444; color: #fff; padding: 0.8rem; border-radius: var(--radius);
+            width: 100%; margin-bottom: 1rem; font-size: 1rem; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+
+        /* AGENDA */
+        .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.5rem 1rem; font-size: 1rem; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); font-weight: bold; }
+        .appointment-item {
+            background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: var(--radius); margin-bottom: 1rem;
+            border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;
+            position: relative;
+        }
+        .appointment-item.paid { border-left-color: var(--success); background: rgba(0, 230, 118, 0.05); }
+        .item-actions { display: flex; gap: 5px; }
+
+        /* FINANZAS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-input); padding: 1.5rem; border-radius: var(--radius); text-align: center; border: 1px solid #333; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary); margin-top: 0.5rem; }
+
+        /* QR & MARKETING */
+        .qr-container { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+        #qrcode { padding: 20px; background: #fff; border-radius: var(--radius); }
+
+        /* DISEÑADOR */
+        .designer-container { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; height: calc(100vh - 150px); }
+        .controls-panel { overflow-y: auto; padding-right: 10px; }
+        .canvas-wrapper { background: #000; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; overflow: hidden; border: 2px solid #333; position: relative; }
+        canvas { max-width: 100%; max-height: 100%; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-bottom: 1rem; }
+        .bg-thumb { height: 50px; border-radius: 4px; cursor: pointer; border: 2px solid transparent; background-size: cover; background-position: center; }
+        .bg-thumb:hover { transform: scale(1.1); }
+        .bg-thumb.selected { border-color: #fff; box-shadow: 0 0 10px var(--primary); }
+
+        /* MODALES */
+        .theme-modal, .creator-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center;
+        }
+        .theme-modal.active, .creator-modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-panel); padding: 2rem; border-radius: var(--radius);
+            width: 90%; max-width: 500px; border: 2px solid var(--primary); text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+        .creator-name { font-size: 2rem; color: var(--primary); font-weight: 900; text-transform: uppercase; margin: 1rem 0; text-shadow: 0 0 10px var(--primary); }
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; margin-top: 1rem; max-height: 60vh; overflow-y: auto; }
+        .theme-card { height: 60px; border-radius: 8px; cursor: pointer; border: 2px solid #333; transition: 0.2s; }
+        .theme-card:hover { transform: scale(1.05); border-color: #fff; }
+        .theme-card.active { border-color: var(--primary); transform: scale(1.1); box-shadow: 0 0 15px var(--primary); }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            aside { width: 70px; padding: 1rem 0.5rem; }
+            .brand-text, nav button span { display: none; }
+            .brand-container { justify-content: center; }
+            nav button { justify-content: center; padding: 1rem 0; }
+            main { margin-left: 70px; padding: 1rem; }
+            .designer-container { grid-template-columns: 1fr; height: auto; }
+            .canvas-wrapper { height: 400px; margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-container">
+            <svg class="login-logo" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            <h1 class="login-title">BARBERAGEND</h1>
+            <input type="password" id="loginPass" class="login-input" placeholder="INGRESAR CLAVE" onkeypress="handleEnter(event)">
+            <button class="login-btn" onclick="attemptLogin()">INGRESAR</button>
+            <div id="loginError">USUARIO INVALIDO NO SEAS RATON Y PAGA LOS $30.000 RATONNN</div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="main-sidebar">
+        <div class="brand-container" onclick="showCreator()">
+            <svg class="logo-svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            <span class="brand-text">BARBERAGEND</span>
+        </div>
+        <nav>
+            <button onclick="showSection('agenda')" id="btn-agenda" class="active">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Agenda</span>
+            </button>
+            <button onclick="showSection('finance')" id="btn-finance">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Caja (Finanzas)</span>
+            </button>
+            <button onclick="showSection('designer')" id="btn-designer">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span>Studio Pro</span>
+            </button>
+            <button onclick="showSection('marketing')" id="btn-marketing">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>QR / Marketing</span>
+            </button>
+            <button onclick="openThemeModal()" style="margin-top: auto; border-top: 1px solid #333; color: #fff;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                <span>Temas</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- MODAL CREADOR -->
+    <div id="creatorModal" class="creator-modal" onclick="hideCreator(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="color:var(--text-muted); text-transform:uppercase; letter-spacing:2px;">Desarrollador</h3>
+            <div class="creator-name">AXEL QUEVEDO NAHUEL</div>
+            <p style="color:#fff; margin-bottom:1.5rem;">© 2023 Todos los derechos reservados</p>
+            <button class="btn" onclick="hideCreator()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <main id="main-app">
+        <!-- AGENDA -->
+        <section id="section-agenda" class="active">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 style="margin:0; border:none;">Agenda de Citas</h2>
+                <span style="color:var(--primary); font-weight:bold;">BARBERAGEND</span>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchAgendaTab('new')">Nueva Cita</button>
+                <button class="tab-btn" onclick="switchAgendaTab('all')">Historial Completo</button>
+            </div>
+            <div id="tab-new" class="booking-layout">
+                <div class="card">
+                    <h3>Agendar Cliente</h3>
+                    <div id="clientSuggestion" style="background: rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:15px; display:none; border-left:3px solid var(--primary);">
+                        <strong>🧠 Historial detectado:</strong> <span id="suggestionText"></span>
+                    </div>
+                    <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                        <label>Nombre Cliente</label>
+                        <input type="text" id="clientName" required placeholder="Nombre..." oninput="checkClientHistory()">
+                        
+                        <label>Teléfono (WhatsApp)</label>
+                        <input type="tel" id="clientPhone" placeholder="+54 9 11 1234 5678">
+
+                        <label>Servicio</label>
+                        <select id="service" required onchange="updatePriceSuggestion()">
+                            <option value="Corte Clásico">Corte Clásico</option>
+                            <option value="Fade / Degradado">Fade / Degradado</option>
+                        </select>
+
+                        <!-- NUEVO CAMPO DE PRECIO EDITABLE -->
+                        <label>Precio del Corte ($)</label>
+                        <input type="number" id="servicePrice" placeholder="0" value="15000" required>
+
+                        <label>Fecha y Hora</label>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <input type="date" id="date" required>
+                            <input type="time" id="time" required>
+                        </div>
+
+                        <button type="submit" class="btn" style="width:100%">Guardar Cita</button>
+                    </form>
+                </div>
+            </div>
+            <div id="tab-all" style="display:none;">
+                <div class="card">
+                    <h3>Todas las Citas</h3>
+                    <div id="appointmentsList"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINANZAS -->
+        <section id="section-finance">
+            <h2>Caja Diaria</h2>
+            <p style="color:var(--text-muted); margin-bottom:2rem;">Controla tus ingresos aquí. Marca las citas como "Pagadas" en la Agenda para sumarlas.</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Ganancias Hoy</h4>
+                    <div class="stat-value" id="todayTotal">$0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Histórico</h4>
+                    <div class="stat-value" id="allTimeTotal">$0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Citas Pendientes</h4>
+                    <div class="stat-value" id="pendingCount" style="color: #ff5252;">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Historial de Pagos</h3>
+                <div id="financeList"></div>
+            </div>
+        </section>
+
+        <!-- MARKETING (QR) -->
+        <section id="section-marketing">
+            <h2>Tarjeta Digital (QR)</h2>
+            <p style="color:var(--text-muted); margin-bottom:2rem;">Genera un código QR para que tus clientes guarden tu contacto al escanear.</p>
+            <div class="card">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3>Tus Datos</h3>
+                        <label>Nombre del Negocio</label>
+                        <input type="text" id="qrName" value="BARBERAGEND">
+                        <label>Teléfono</label>
+                        <input type="tel" id="qrPhone" placeholder="+54...">
+                        <label>Dirección</label>
+                        <input type="text" id="qrAddress" placeholder="Calle 123, Ciudad">
+                        <button class="btn" style="width:100%; margin-top:1rem;" onclick="generateQR()">Generar QR</button>
+                    </div>
+                    <div class="qr-container">
+                        <div id="qrcode"></div>
+                        <p style="font-size:0.8rem; color:#888; text-align:center;">Escanea para guardar contacto</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DISEÑADOR -->
+        <section id="section-designer">
+            <h2>Studio Pro</h2>
+            <div class="designer-container">
+                <div class="card controls-panel">
+                    <h4>1. Fondo</h4>
+                    <div style="margin-bottom:10px;">
+                        <input type="file" id="customBgUpload" accept="image/*" style="display:none" onchange="handleCustomBg(event)">
+                        <button class="btn btn-outline" style="width:100%; font-size:0.8rem;" onclick="document.getElementById('customBgUpload').click()">📁 Subir Imagen Propia</button>
+                    </div>
+                    <div id="backgroundGrid" class="bg-grid"></div>
+                    <hr style="border:0; border-top:1px solid #333; margin: 1.5rem 0;">
+                    <h4>2. Texto</h4>
+                    <textarea id="posterText" rows="3" oninput="drawPoster()" placeholder="Escribe aquí..."></textarea>
+                    <input type="text" id="posterSubtext" value="BARBERAGEND" oninput="drawPoster()">
+                    <label>Estilo Letra:</label>
+                    <select id="textStyle" onchange="drawPoster()"></select>
+                    <button class="btn" style="width:100%; margin-top:1rem;" onclick="downloadPoster()">⬇ Descargar</button>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="posterCanvas"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL TEMAS -->
+    <div id="themeModal" class="theme-modal">
+        <div class="modal-content" style="max-width:800px;">
+            <h2>36 Estilos</h2>
+            <div class="theme-grid" id="themeGrid"></div>
+            <button class="btn btn-outline" style="margin-top:1.5rem; width:100%" onclick="closeThemeModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        /* --- 1. LOGIN --- */
+        function handleEnter(e) { if(e.key === 'Enter') attemptLogin(); }
+        function attemptLogin() {
+            const pass = document.getElementById('loginPass').value;
+            const errorDiv = document.getElementById('loginError');
+            if (pass === 'axelshop20') {
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-screen').style.display = 'none';
+                    const mainApp = document.getElementById('main-app');
+                    mainApp.style.display = 'flex';
+                    setTimeout(() => mainApp.classList.add('visible'), 50);
+                    generateQR();
+                }, 500);
+            } else {
+                errorDiv.style.display = 'block';
+                errorDiv.style.animation = 'none';
+                errorDiv.offsetHeight; 
+                errorDiv.style.animation = 'shake 0.5s';
+            }
+        }
+
+        /* --- 2. DATOS --- */
+        let appointments = JSON.parse(localStorage.getItem('barberAppointments')) || [];
+        let clientsDB = JSON.parse(localStorage.getItem('barberClientsDB')) || {}; 
+        // Migración simple por seguridad
+        appointments.forEach(a => { if(!a.phone) a.phone = ""; if(!a.paid) a.paid = false; if(!a.price) a.price = 0; });
+        document.getElementById('date').min = new Date().toISOString().split("T")[0];
+
+        function saveData() {
+            localStorage.setItem('barberAppointments', JSON.stringify(appointments));
+            renderAppointments();
+            updateFinanceStats();
+        }
+
+        /* --- 3. NAVIGATION --- */
+        function showSection(id) {
+            document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + id).classList.add('active');
+            document.querySelectorAll('aside nav button').forEach(b => b.classList.remove('active'));
+            if(id !== 'themes') document.getElementById('btn-' + id).classList.add('active');
+        }
+
+        /* --- 4. AGENDA CON PRECIO FLEXIBLE --- */
+        function switchAgendaTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-new').style.display = tab==='new' ? 'block' : 'none';
+            document.getElementById('tab-all').style.display = tab==='all' ? 'block' : 'none';
+        }
+        function checkClientHistory() {
+            const name = document.getElementById('clientName').value.trim().toLowerCase();
+            const box = document.getElementById('clientSuggestion');
+            if(clientsDB[name]) {
+                box.style.display = 'block';
+                document.getElementById('suggestionText').innerText = `Ultima vez: ${clientsDB[name].lastService}`;
+            } else box.style.display = 'none';
+        }
+
+        // Función nueva: Sugerir precio según el servicio elegido
+        function updatePriceSuggestion() {
+            const service = document.getElementById('service').value;
+            const priceInput = document.getElementById('servicePrice');
+            
+            if (service.includes('Clásico')) priceInput.value = 15000;
+            else if (service.includes('Fade')) priceInput.value = 20000;
+            else priceInput.value = 0;
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('clientName').value.trim().toLowerCase();
+            const svc = document.getElementById('service').value;
+            const phone = document.getElementById('clientPhone').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            
+            // OBTENER EL PRECIO DEL INPUT (FLEXIBLE)
+            const price = parseFloat(document.getElementById('servicePrice').value) || 0;
+
+            if(!clientsDB[name]) clientsDB[name] = { visits: 0, lastService: "" };
+            clientsDB[name].visits++; clientsDB[name].lastService = svc;
+            localStorage.setItem('barberClientsDB', JSON.stringify(clientsDB));
+
+            appointments.push({ 
+                id: Date.now(), 
+                name: document.getElementById('clientName').value, 
+                service: svc, 
+                price: price, // Usar el precio ingresado
+                phone: phone,
+                date: date, 
+                time: time, 
+                paid: false 
+            });
+            saveData();
+            document.getElementById('bookingForm').reset();
+            document.getElementById('clientSuggestion').style.display = 'none';
+            // Restablecer sugerencia de precio al reset
+            document.getElementById('servicePrice').value = 15000;
+        }
+
+        function renderAppointments() {
+            const list = document.getElementById('appointmentsList'); list.innerHTML = '';
+            appointments.sort((a,b) => new Date(a.date) - new Date(b.date));
+            appointments.forEach(a => {
+                const waBtn = a.phone ? `<a href="#" onclick="sendWhatsApp('${a.phone}', '${a.name}', '${a.date}', '${a.time}')" class="btn btn-whatsapp">WA</a>` : '';
+                const payBtn = !a.paid ? `<button class="btn btn-success" onclick="markPaid(${a.id})">$$ Pagar</button>` : `<span style="color:var(--success); font-weight:bold;">PAGADO</span>`;
+                const delBtn = `<button class="btn btn-danger" onclick="deleteAppointment(${a.id})">X</button>`;
+                const statusClass = a.paid ? 'paid' : '';
+                list.innerHTML += `
+                    <div class="appointment-item ${statusClass}">
+                        <div>
+                            <strong>${a.name}</strong> <small>(${a.service})</small>
+                            <div><small>${a.date} a las ${a.time}</small> | <span style="color:${a.paid ? 'var(--success)':'#888'}">$${a.price}</span></div>
+                        </div>
+                        <div class="item-actions">
+                            ${waBtn} ${payBtn} ${delBtn}
+                        </div>
+                    </div>`;
+            });
+        }
+        function deleteAppointment(id) { appointments = appointments.filter(a => a.id !== id); saveData(); }
+        function sendWhatsApp(phone, name, date, time) { const cleanPhone = phone.replace(/[^0-9]/g, ''); const msg = `Hola ${name}, te recuerdo tu cita en BARBERAGEND para el día ${date} a las ${time}. Nos vemos!`; const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`; window.open(url, '_blank'); }
+        function markPaid(id) { const apt = appointments.find(a => a.id === id); if(apt) { apt.paid = true; saveData(); alert("Cita marcada como PAGADA"); } }
+
+        /* --- 5. FINANZAS --- */
+        function updateFinanceStats() {
+            const todayStr = new Date().toISOString().split("T")[0];
+            let today = 0, total = 0, pending = 0;
+            let financeList = document.getElementById('financeList');
+            financeList.innerHTML = '';
+            const paidAppts = appointments.filter(a => a.paid);
+            paidAppts.forEach(a => {
+                total += a.price;
+                if(a.date === todayStr) today += a.price;
+                financeList.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333;"><span>${a.name} (${a.service})</span><span style="color:var(--success); font-weight:bold;">+$${a.price}</span></div>`;
+            });
+            pending = appointments.filter(a => !a.paid).length;
+            document.getElementById('todayTotal').innerText = `$${today}`;
+            document.getElementById('allTimeTotal').innerText = `$${total}`;
+            document.getElementById('pendingCount').innerText = pending;
+        }
+
+        /* --- 6. MARKETING --- */
+        function generateQR() {
+            const name = document.getElementById('qrName').value;
+            const phone = document.getElementById('qrPhone').value;
+            const address = document.getElementById('qrAddress').value;
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = ""; 
+            const vCard = `BEGIN:VCARD\nVERSION:3.0\nN:;${name};;;\nFN:${name}\nORG:BARBERAGEND\nTEL;TYPE=CELL:${phone}\nADR;TYPE=WORK:;;${address};;;;${name}\nEND:VCARD`;
+            new QRCode(qrContainer, { text: vCard, width: 128, height: 128, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+        }
+
+        /* --- 7. STUDIO & THEMES --- */
+        function showCreator() { document.getElementById('creatorModal').classList.add('active'); }
+        function hideCreator(e) { if(!e || e.target.id === 'creatorModal') document.getElementById('creatorModal').classList.remove('active'); }
+        function openThemeModal() { document.getElementById('themeModal').classList.add('active'); }
+        function closeThemeModal() { document.getElementById('themeModal').classList.remove('active'); }
+
+        const canvas = document.getElementById('posterCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800; canvas.height = 1000;
+        
+        const themes = [
+            { bg: '#121212', primary: '#d4af37', name: 'Gold Classic' }, { bg: '#1a0505', primary: '#ff5252', name: 'Red Passion' },
+            { bg: '#05101a', primary: '#2196f3', name: 'Ocean Blue' }, { bg: '#1a051a', primary: '#e040fb', name: 'Royal Purple' },
+            { bg: '#0d1a0d', primary: '#4caf50', name: 'Army Green' }, { bg: '#000000', primary: '#00e5ff', name: 'Cyber Neon' },
+            { bg: '#f0f0f0', primary: '#333333', text: '#121212', name: 'Clean White' }, { bg: '#1a1208', primary: '#ff9800', name: 'Sunset' },
+            { bg: '#1a0529', primary: '#ff00cc', name: 'Vaporwave Pink' }, { bg: '#051a1a', primary: '#00ff9d', name: 'Toxic Green' },
+            { bg: '#1a1a05', primary: '#ffea00', name: 'Acid Yellow' }, { bg: '#150505', primary: '#ff3333', name: 'Matrix Red' },
+            { bg: '#051515', primary: '#00ffff', name: 'Ice Cyan' }, { bg: '#1a0505', primary: '#ff0000', name: 'Laser Red' },
+            { bg: '#051a05', primary: '#39ff14', name: 'Neon Lime' }, { bg: '#15051a', primary: '#9d00ff', name: 'Electric Violet' },
+            { bg: '#050a1a', primary: '#0000ff', name: 'Deep Blue' }, { bg: '#1a1505', primary: '#ff8c00', name: 'Rust Orange' },
+            { bg: '#051518', primary: '#00ced1', name: 'Turquoise' }, { bg: '#1a0515', primary: '#ff1493', name: 'Hot Pink' },
+            { bg: '#151505', primary: '#ffd700', name: 'Rich Gold' }, { bg: '#050505', primary: '#4a00e0', name: 'Indigo Night' },
+            { bg: '#1a0522', primary: '#ff007f', name: 'Magenta Pop' }, { bg: '#0d0d0d', primary: '#ffffff', name: 'Mono White' },
+            { bg: '#1f1f1f', primary: '#b8860b', name: 'Dark Bronze' }, { bg: '#001f1f', primary: '#20b2aa', name: 'Teal Ocean' },
+            { bg: '#1f0f0f', primary: '#cd5c5c', name: 'Indian Red' }, { bg: '#0f1f0f', primary: '#8fbc8f', name: 'Sea Green' },
+            { bg: '#1f1f00', primary: '#ffdab9', name: 'Peach Cream' }, { bg: '#12121f', primary: '#6a5acd', name: 'Slate Blue' },
+            { bg: '#1f1010', primary: '#f08080', name: 'Light Coral' }, { bg: '#101f1f', primary: '#48d1cc', name: 'Medium Turquoise' },
+            { bg: '#1f1f10', primary: '#e6e6fa', name: 'Lavender' }, { bg: '#0f0f1f', primary: '#9370db', name: 'Medium Purple' },
+            { bg: '#1a0a1a', primary: '#ff00ff', name: 'Fuchsia' }, { bg: '#0a1a1a', primary: '#00ff7f', name: 'Spring Green' }
+        ];
+
+        function initThemes() {
+            const grid = document.getElementById('themeGrid');
+            themes.forEach((t, i) => {
+                const el = document.createElement('div');
+                el.className = 'theme-card';
+                el.style.background = `linear-gradient(45deg, ${t.bg}, ${t.primary})`;
+                el.title = t.name;
+                el.onclick = () => applyTheme(i, el);
+                grid.appendChild(el);
+            });
+        }
+        function applyTheme(index, element) {
+            const t = themes[index];
+            const r = document.documentElement.style;
+            r.setProperty('--primary', t.primary);
+            r.setProperty('--bg-dark', t.bg);
+            r.setProperty('--primary-gradient', `linear-gradient(135deg, ${t.primary}, ${t.primary}88)`);
+            if(t.text) { r.setProperty('--text-main', t.text); } else { r.setProperty('--text-main', '#e0e0e0'); }
+            if(element) {
+                document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+                element.classList.add('active');
+            }
+        }
+
+        // Backgrounds & Poster
+        const coloredBackgrounds = [
+            { type: 'pattern', bg: '#1e88e5', line: '#ffffff' }, { type: 'pattern', bg: '#b71c1c', line: '#000000' },
+            { type: 'pattern', bg: '#1b5e20', line: '#2e7d32' }, { type: 'pattern', bg: '#000000', line: '#d4af37' },
+            { type: 'pattern', bg: '#4a148c', line: '#ffffff' }, { type: 'pattern', bg: '#e65100', line: '#000000' },
+            { type: 'pattern', bg: '#424242', line: '#757575' }, { type: 'pattern', bg: '#006064', line: '#00bcd4' },
+            { type: 'pattern', bg: '#880e4f', line: '#ffffff' }, { type: 'pattern', bg: '#fdd835', line: '#000000' },
+            { type: 'pattern', bg: '#bdbdbd', line: '#ffffff' }, { type: 'pattern', bg: '#000080', line: '#ffd700' },
+            { type: 'pattern', bg: '#004d40', line: '#4db6ac' }, { type: 'pattern', bg: '#4a0000', line: '#d7ccc8' },
+            { type: 'pattern', bg: '#3e2723', line: '#d4af37' }
+        ];
+        const imageBackgrounds = ['https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&q=80', 'https://images.unsplash.com/photo-1503951914875-452162b70987?w=600&q=80'];
+        let backgrounds = [...coloredBackgrounds, ...imageBackgrounds];
+        let customImage = null; let currentBg = backgrounds[0];
+
+        function initBackgrounds() {
+            const grid = document.getElementById('backgroundGrid');
+            grid.innerHTML = "";
+            backgrounds.forEach((bg, i) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'bg-thumb';
+                if(bg.type === 'pattern') thumb.style.background = `repeating-linear-gradient(90deg, ${bg.bg}, ${bg.bg} 10px, ${bg.line} 10px, ${bg.line} 12px)`;
+                else thumb.style.backgroundImage = `url(${bg})`;
+                thumb.onclick = () => { customImage = null; currentBg = bg; drawPoster(); };
+                grid.appendChild(thumb);
+            });
+        }
+        function handleCustomBg(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => { customImage = img; drawPoster(); };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+        function drawPoster() {
+            const w = canvas.width, h = canvas.height;
+            const text = document.getElementById('posterText').value;
+            const sub = document.getElementById('posterSubtext').value;
+            const color = document.getElementById('textStyle').value;
+            ctx.clearRect(0, 0, w, h);
+            if(customImage) { ctx.drawImage(customImage, 0, 0, w, h); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0,0,w,h); }
+            else if(currentBg.type === 'pattern') {
+                ctx.fillStyle = currentBg.bg; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = currentBg.line; ctx.lineWidth=2;
+                ctx.beginPath(); for(let x=0;x<=w;x+=20){ctx.moveTo(x,0);ctx.lineTo(x,h);} ctx.stroke();
+            }
+            ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font=`900 60px Impact, sans-serif`;
+            ctx.fillStyle = (color === 'gradient') ? '#fff' : color; 
+            ctx.shadowColor="rgba(0,0,0,0.8)"; ctx.shadowBlur=10; ctx.shadowOffsetX=4; ctx.shadowOffsetY=4;
+            const words=text.split(' '); let line='', lines=[];
+            for(let n=0;n<words.length;n++){ const testLine=line+words[n]+' '; if(ctx.measureText(testLine).width > w*0.9 && n>0){ lines.push(line); line=words[n]+' '; } else{ line=testLine; } }
+            lines.push(line);
+            let startY = (h/2) - ((lines.length * 72)/2);
+            lines.forEach(l=>{ ctx.fillText(l.toUpperCase(), w/2, startY); startY+=72; });
+            ctx.font=`bold 20px sans-serif`; ctx.fillText(sub.toUpperCase(), w/2, h*0.9);
+        }
+        function downloadPoster() {
+            const link = document.createElement('a');
+            link.download = 'barberagend.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // INICIALIZACIÓN
+        window.addEventListener('load', () => {
+            initThemes();
+            initBackgrounds();
+            renderAppointments();
+            updateFinanceStats();
+            drawPoster();
+            applyTheme(0, null);
+        });
+        const styleSelect = document.getElementById('textStyle');
+        ['#ffffff', '#000000', '#d4af37', '#ff0000'].forEach(c => styleSelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+    </script>
+</body>
+</html>
